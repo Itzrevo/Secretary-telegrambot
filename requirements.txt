@@ -1,0 +1,4 @@
+telebot
+transformers
+sentencepiece
+accelerate
