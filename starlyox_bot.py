@@ -24,8 +24,8 @@ acc_name = bot_info.first_name or bot_info.username
 def handle_message(message):
     user_text = message.text.strip()
 
-    # Intro with dynamic account name + AI assistant + forwarding line
-    intro = f"✉️ I’m {acc_name}, AI assistant. I’ll make sure this message is delivered."
+    # Intro with dynamic account name + assurance for all messages
+    intro = f"✉️ I’m {acc_name}, AI assistant. I’ll make sure all messages are delivered."
 
     # AI continuation
     response = generator(
