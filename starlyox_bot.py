@@ -6,8 +6,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 hf_token = os.getenv("HUGGINGFACE_TOKEN")
 model_name = "distilgpt2"  # smaller model for stability
 
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name, token=os.getenv("HUGGINGFACE_TOKEN"))
+model = AutoModelForCausalLM.from_pretrained(model_name, token=os.getenv("HUGGINGFACE_TOKEN"))
 
 generator = pipeline("text-generation", model=model, tokenizer=tokenizer)
 
