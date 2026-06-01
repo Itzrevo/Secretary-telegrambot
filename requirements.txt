@@ -1,4 +1,3 @@
-telebot
+pyTelegramBotAPI
 transformers
-sentencepiece
-accelerate
+torch
