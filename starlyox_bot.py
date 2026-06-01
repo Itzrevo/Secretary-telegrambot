@@ -1,42 +1,41 @@
 import os
 import telebot
-from transformers import pipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
-# Load Telegram token from Railway environment variable
-bot = telebot.TeleBot(os.getenv("TELEGRAM_BOT_TOKEN"))
+# --- Load Hugging Face model ---
+hf_token = os.getenv("HUGGINGFACE_TOKEN")
+model_name = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"  # adjust if using another repo
 
-# Get bot's own profile info (dynamic name)
-me = bot.get_me()
-owner_name = me.first_name if me.first_name else me.username
+tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token)
+model = AutoModelForCausalLM.from_pretrained(model_name, token=hf_token)
 
-# Smarter lightweight AI model
-generator = pipeline("text-generation", model="TinyLlama/TinyLlama-1.1B-Instruct")
+generator = pipeline("text-generation", model=model, tokenizer=tokenizer)
 
-SAFEWORDS = ["violence", "hate", "kill", "drugs"]
+# --- Setup Telegram bot ---
+tg_token = os.getenv("TELEGRAM_BOT_TOKEN")
+bot = telebot.TeleBot(tg_token)
 
+# --- Secretary-style reply handler ---
 @bot.message_handler(func=lambda message: True)
-def reply(message):
-    user_text = message.text
+def handle_message(message):
+    user_text = message.text.strip()
 
     # Generate AI reply
-    ai_output = generator(
-        f"Secretary reply to: {user_text}",
-        max_length=80,
-        num_return_sequences=1
-    )[0]['generated_text']
+    response = generator(
+        f"Secretary-style reply to: {user_text}",
+        max_length=120,
+        do_sample=True,
+        top_p=0.9,
+        temperature=0.7
+    )[0]["generated_text"]
 
-    # Safety filter
-    if any(word in ai_output.lower() for word in SAFEWORDS):
-        ai_output = "I cannot answer that."
+    # Clean response (avoid echoing prompt)
+    if response.startswith("Secretary-style reply to:"):
+        response = response.replace("Secretary-style reply to:", "").strip()
 
-    # Secretary-style tone with dynamic name
-    secretary_reply = (
-        f"✉️ Hello, I’m {owner_name}’s secretary.\n"
-        f"I’ve noted your message: \"{user_text}\".\n"
-        f"I’ll make sure {owner_name} sees it soon.\n\n"
-        f"Quick reply: {ai_output}"
-    )
+    # Send back to user
+    bot.reply_to(message, f" StarlyXO: {response}")
 
-    bot.reply_to(message, secretary_reply)
-
-bot.infinity_polling()
+# --- Keep bot running ---
+print("Bot is now polling...")
+bot.polling()
