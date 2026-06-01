@@ -2,12 +2,12 @@ import os
 import telebot
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
-# --- Load Hugging Face model ---
+# --- Load Hugging Face model (lightweight for Railway free tier) ---
 hf_token = os.getenv("HUGGINGFACE_TOKEN")
-model_name = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"  # adjust if using another repo
+model_name = "distilgpt2"  # smaller model for stability
 
-tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token)
-model = AutoModelForCausalLM.from_pretrained(model_name, token=hf_token)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
 
 generator = pipeline("text-generation", model=model, tokenizer=tokenizer)
 
@@ -15,27 +15,28 @@ generator = pipeline("text-generation", model=model, tokenizer=tokenizer)
 tg_token = os.getenv("TELEGRAM_BOT_TOKEN")
 bot = telebot.TeleBot(tg_token)
 
-# --- Secretary-style reply handler ---
+# Fetch bot account info
+bot_info = bot.get_me()
+acc_name = bot_info.first_name or bot_info.username
+
+# --- Reply handler ---
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
     user_text = message.text.strip()
 
-    # Generate AI reply
+    # Intro with dynamic account name + AI assistant + forwarding line
+    intro = f"✉️ I’m {acc_name}, AI assistant. I’ll make sure this message is delivered."
+
+    # AI continuation
     response = generator(
-        f"Secretary-style reply to: {user_text}",
-        max_length=120,
+        user_text,
+        max_length=80,
         do_sample=True,
         top_p=0.9,
         temperature=0.7
     )[0]["generated_text"]
 
-    # Clean response (avoid echoing prompt)
-    if response.startswith("Secretary-style reply to:"):
-        response = response.replace("Secretary-style reply to:", "").strip()
+    bot.reply_to(message, intro + "\n\nReply: " + response)
 
-    # Send back to user
-    bot.reply_to(message, f" StarlyXO: {response}")
-
-# --- Keep bot running ---
 print("Bot is now polling...")
 bot.polling()
