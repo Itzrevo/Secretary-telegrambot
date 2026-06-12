@@ -1,6 +1,7 @@
+import os
 import telebot
 
-tg_token = "TELEGRAM_BOT_TOKEN"
+tg_token = os.getenv("TELEGRAM_BOT_TOKEN")
 bot = telebot.TeleBot(tg_token)
 
 YOUR_USER_ID = "My_Telegram_ID"  # Replace with your actual Telegram user ID
