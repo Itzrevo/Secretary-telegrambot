@@ -4,7 +4,7 @@ import telebot
 tg_token = os.getenv("TELEGRAM_BOT_TOKEN")
 bot = telebot.TeleBot(tg_token)
 
-YOUR_USER_ID = "My_Telegram_ID"  # Replace with your actual Telegram user ID
+YOUR_USER_ID = 5452646360  # Replace with your actual Telegram user ID
 
 def get_sender_name(user):
     if user.username:
@@ -39,7 +39,7 @@ def handle_message(message):
         text = f"[{message.content_type} file]"
 
     sender = get_sender_name(message.from_user)
-    bot.reply_to(message, "I'm StarlyXO, a secretary. I'm managing messages while my human is away./forward to forward massages to my human.")
+    bot.reply_to(message, "I'm StarlyXO, a secretary. I'm managing messages while my human is away. /forward to forward massages to my human.")
     bot.send_message(YOUR_USER_ID, f"Status from {sender}: {text}")
 
 print("Bot is now polling...")
